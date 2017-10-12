@@ -1,0 +1,14 @@
+{
+  "name": "sm345-server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "crypto": "^1.0.1",
+    "express": "^4.16.1",
+    "jsonwebtoken": "^8.0.1",
+    "morgan": "^1.9.0",
+    "mysql": "^2.15.0"
+  }
+}
