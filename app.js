@@ -3,15 +3,13 @@
 ===================================== */ 
 const express = require('express')
 const bodyParser = require('body-parser')
+const cors = require('cors')
 const morgan = require('morgan')
-const mysql = require('mysql')
-// const crypto = require('crypto')
 
 /* ====================================
         LOAD THE CONFIG
 ===================================== */ 
 const { secret, database } = require('./config')
-const connection = mysql.createConnection(database)
 const port = process.env.port || 3000
 
 /* ====================================
@@ -30,28 +28,10 @@ app.use(morgan('dev'))
 app.set('jwt-secret', secret)
 
 // set the mysql connection
-app.set('connection', connection)
+app.set('database', database)
 
-// Add headers
-app.use(function (req, res, next) {
-
-        // Website you wish to allow to connect
-        // 아직 로컬 테스트용으로 설정함.
-        res.setHeader('Access-Control-Allow-Origin', '*');
-
-        // Request methods you wish to allow
-        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-
-        // Request headers you wish to allow
-        res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With, content-type');
-
-        // Set to true if you need the website to include cookies in the requests sent
-        // to the API (e.g. in case you use sessions)
-        res.setHeader('Access-Control-Allow-Credentials', true);
-
-        // Pass to next layer of middleware
-        next();
-});
+// Cross Origin use
+app.use(cors())
 
 // index page, just for testing
 app.get('/', (req, res) => {

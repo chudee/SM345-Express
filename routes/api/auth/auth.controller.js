@@ -1,5 +1,7 @@
 const jwt = require('jsonwebtoken')
-const { query } = require('../../../models/login');
+const { query } = require('../../../models/login')
+const async = require('async')
+const mysql = require('mysql')
 
 /*
     POST /api/auth/login
@@ -8,64 +10,68 @@ const { query } = require('../../../models/login');
         password
     }
 */
-exports.login = (req, res) => {
+
+exports.login = async (req, res) => {
     const { id, password } = req.body
     const secret = req.app.get('jwt-secret')
-    const connection = req.app.get('connection')
+    const database = req.app.get('database')
 
-    connection.query(query, [id, password], function(err, user, fields) {
-        if (!err) {
-            check(user[0])
-            .then(respond)
-            .catch(onError)
-        }
-    })
-
-    const check = (user) => {
-        if(!user) {
-            // user does not exist
-            throw new Error('login failed')
+    const createDB = (cb) => {
+        const conn = mysql.createConnection(database)
+        if(conn) {
+            cb(null, conn)
         } else {
-            // user exists, check the password
-            if(user.user_password === password) {
-                // create a promise that generates jwt asynchronously
-                const p = new Promise((resolve, reject) => {
-                    jwt.sign(
-                        {
-                            _id: user.id,
-                            username: user.user_id
-                        }, 
-                        secret, 
-                        {
-                            expiresIn: '7d',
-                            issuer: 'sm345.com',
-                            subject: 'userInfo'
-                        }, (err, token) => {
-                            if (err) reject(err)
-                            resolve(token) 
-                        })
-                })
-                return p
-            } else {
-                throw new Error('login failed')
-            }
+            cb(err, null)
         }
     }
 
-    // respond the token 
-    const respond = (token) => {
-        res.json({
-            message: 'logged in successfully',
-            token
-        })
+    const queryDB = (conn, cb) => {
+        conn.query(query, [id, password], function(err, rows, fields) {
+            console.log(rows)
+            if (err) {
+                cb(err, null)
+            } else {
+                cb(null, rows)
+                conn.end()
+            }
+        })   
     }
 
-    // error occured
-    const onError = (error) => {
-        res.status(403).json({
-            message: error.message
-        })
+    const createToken = (rows, cb) => {
+        jwt.sign(
+            {
+                _id: rows.id,
+                username: rows[0].user_id
+            }, 
+            secret, 
+            {
+                expiresIn: '7d',
+                issuer: 'sm345.com',
+                subject: 'userInfo'
+            }, (err, token) => {
+                if(err) {
+                    cb(err, null)
+                } else {
+                    cb(null, token)
+                }
+            }
+        )
     }
+
+    async.waterfall([createDB, queryDB, createToken], function (err, token) {
+        if (err) {
+            res.writeHead(500, {'Content-Type': 'application/json'});
+            res.end(JSON.stringify({
+                error: err
+            }));
+        } else {
+            res.writeHead(200, {'Content-Type': 'application/json'});
+            res.end(JSON.stringify({
+                message: 'logged in successfully',
+                token
+            }));
+        }
+    });
 }
 
 /*
