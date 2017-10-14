@@ -10,25 +10,16 @@ const mysql = require('mysql')
         password
     }
 */
-
-exports.login = async (req, res) => {
+exports.login = (req, res) => {
     const { id, password } = req.body
     const secret = req.app.get('jwt-secret')
     const database = req.app.get('database')
+    const conn = mysql.createConnection(database)
 
-    const createDB = (cb) => {
-        const conn = mysql.createConnection(database)
-        if(conn) {
-            cb(null, conn)
-        } else {
-            cb(err, null)
-        }
-    }
-
-    const queryDB = (conn, cb) => {
+    const queryDB = (cb) => {
         conn.query(query, [id, password], function(err, rows, fields) {
-            console.log(rows)
             if (err) {
+                console.log(err);
                 cb(err, null)
             } else {
                 cb(null, rows)
@@ -58,7 +49,7 @@ exports.login = async (req, res) => {
         )
     }
 
-    async.waterfall([createDB, queryDB, createToken], function (err, token) {
+    async.waterfall([queryDB, createToken], function (err, token) {
         if (err) {
             res.writeHead(500, {'Content-Type': 'application/json'});
             res.end(JSON.stringify({
@@ -78,9 +69,9 @@ exports.login = async (req, res) => {
     GET /api/auth/check
 */
 
-exports.check = (req, res) => {
-    res.json({
-        success: true,
-        info: req.decoded
-    })
-}
+// exports.check = (req, res) => {
+//     res.json({
+//         success: true,
+//         info: req.decoded
+//     })
+// }
