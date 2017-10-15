@@ -5,17 +5,26 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 const morgan = require('morgan')
+const https = require('https')
+const fs = require('fs')
 
 /* ====================================
         LOAD THE CONFIG
 ===================================== */ 
 const { secret, database } = require('./config')
 const port = process.env.port || 3000
+const options = {
+    cert: fs.readFileSync('./ sslcert / fullchain.pem'),
+    key: fs.readFileSync('./ sslcert / privkey.pem'),
+};
 
 /* ====================================
         EXPRESS CONFIGURATION
 ===================================== */ 
 const app = express()
+
+app.use(express.static('static'));
+app.use(require('helmet')());
 
 // parse JSON and url-encoded query
 app.use(bodyParser.urlencoded({extended: true}))
@@ -40,6 +49,9 @@ app.get('/', (req, res) => {
 
 // configure api router
 app.use('/api', require('./routes/api'))
+
+// health-check
+app.get ('/health-check', (req, res) => res.sendStatus (200));
 
 // open the server
 app.listen(port, () => {

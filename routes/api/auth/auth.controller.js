@@ -69,9 +69,9 @@ exports.login = (req, res) => {
     GET /api/auth/check
 */
 
-// exports.check = (req, res) => {
-//     res.json({
-//         success: true,
-//         info: req.decoded
-//     })
-// }
+exports.check = (req, res) => {
+    res.json({
+        success: true,
+        info: req.decoded
+    })
+}
