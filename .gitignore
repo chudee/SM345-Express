@@ -1,4 +1,8 @@
 node_modules
 models
+sslcert
+dist
+static
 
+yarn.lock
 config.js

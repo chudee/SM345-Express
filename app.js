@@ -12,10 +12,10 @@ const fs = require('fs')
         LOAD THE CONFIG
 ===================================== */ 
 const { secret, database } = require('./config')
-const port = process.env.port || 3000
+const port = process.env.port || 8080
 const options = {
-    cert: fs.readFileSync('./ sslcert / fullchain.pem'),
-    key: fs.readFileSync('./ sslcert / privkey.pem'),
+    cert: fs.readFileSync(__dirname + '/sslcert/fullchain.pem'),
+    key: fs.readFileSync(__dirname + '/sslcert/privkey.pem'),
 };
 
 /* ====================================
@@ -23,8 +23,9 @@ const options = {
 ===================================== */ 
 const app = express()
 
-app.use(express.static('static'));
-app.use(require('helmet')());
+//app.use(express.static(__dirname + '/static'))
+app.use(express.static(__dirname + '/dist'))
+app.use(require('helmet')())
 
 // parse JSON and url-encoded query
 app.use(bodyParser.urlencoded({extended: true}))
@@ -57,3 +58,6 @@ app.get ('/health-check', (req, res) => res.sendStatus (200));
 app.listen(port, () => {
     console.log(`Express is running on port ${port}`)
 })
+
+// https
+https.createServer(options, app).listen(443)
