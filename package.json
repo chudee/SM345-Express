@@ -1,5 +1,5 @@
 {
-  "name": "sm345-server",
+  "name": "sm345-express",
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
