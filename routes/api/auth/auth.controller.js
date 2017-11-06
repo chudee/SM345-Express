@@ -32,8 +32,8 @@ exports.login = (req, res) => {
         jwt.sign(
             {
                 _id: rows.id,
-                username: rows[0].username,
-                user_id: rows[0].user_id
+                user_id: rows[0].user_id,
+                user_name: rows[0].user_name
             }, 
             secret, 
             {
